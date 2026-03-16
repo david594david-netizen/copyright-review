@@ -1,4 +1,4 @@
-               import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { CheckCircle, AlertTriangle, XCircle, Search, BookOpen, ExternalLink, Loader2, FileEdit } from 'lucide-react';
 
 export default function App() {
@@ -56,20 +56,16 @@ export default function App() {
           const score = topMatch.score;
           const dbTitle = topMatch.title ? topMatch.title[0] : '';
           
-          // 【新增】標題相似度比對邏輯
+          // 【新增】標題相似度比對邏輯 (修改為 100% 嚴格比對)
           let isTitleMatch = false;
           if (dbTitle) {
-            // 將字串轉小寫並移除標點符號，切分成單字陣列
-            const normalize = str => str.toLowerCase().replace(/[^\w\s]/gi, '');
-            const dbTitleWords = normalize(dbTitle).split(/\s+/).filter(w => w.length > 2); // 只比對長度大於2的實質單字
-            const normalizedInput = normalize(ref);
+            // 將字串轉小寫、移除所有標點符號，並將多餘空白替換為單一空白
+            const normalize = str => str.toLowerCase().replace(/[^\w\s]/gi, '').replace(/\s+/g, ' ').trim();
+            const cleanDbTitle = normalize(dbTitle);
+            const cleanInput = normalize(ref);
             
-            // 計算資料庫標題的單字，有多少比例出現在使用者輸入的字串中
-            const matchedWords = dbTitleWords.filter(w => normalizedInput.includes(w));
-            const matchRatio = dbTitleWords.length > 0 ? matchedWords.length / dbTitleWords.length : 0;
-            
-            // 設定閾值：至少 60% 的標題關鍵字必須吻合
-            isTitleMatch = matchRatio > 0.6;
+            // 嚴格要求：使用者輸入的文獻字串，必須 100% 完整包含資料庫的標題字串
+            isTitleMatch = cleanDbTitle.length > 0 && cleanInput.includes(cleanDbTitle);
           }
 
           let status, message;
